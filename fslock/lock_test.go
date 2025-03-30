@@ -738,7 +738,8 @@ func TestExec(t *testing.T) {
 			if err := l.PreserveExec(); err != nil {
 				t.Fatalf("failed preserve lock: %v", err)
 			}
-			args := []string{"-test.run", "^TestExec$"}
+			bin := filepath.Base(executable)
+			args := []string{bin, "-test.run", "^TestExec$"}
 			env := append(os.Environ(), fmt.Sprintf("%s=%s", envCheckLock, "1"))
 			if err := unix.Exec(executable, args, env); err != nil {
 				t.Fatalf("failed to exec self: %v", err)
@@ -752,8 +753,12 @@ func TestExec(t *testing.T) {
 
 		return
 	}
+	wd, err := os.Getwd()
+	if err != nil {
+		t.Fatalf("failed to get working directory: %v", err)
+	}
 
-	tmp, err := os.CreateTemp("", "FSLOCK")
+	tmp, err := os.CreateTemp(wd, "FSLOCK")
 	if err != nil {
 		t.Fatalf("failed to create temp lock file")
 	}
